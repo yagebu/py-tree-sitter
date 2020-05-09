@@ -18,7 +18,7 @@ JAVASCRIPT = Language(LIB_PATH, "javascript")
 
 
 class TestParser(TestCase):
-    def test_set_language(self):
+    def test_set_language(self) -> None:
         parser = Parser()
         parser.set_language(PYTHON)
         tree = parser.parse(b"def foo():\n  bar()")
@@ -49,7 +49,7 @@ class TestParser(TestCase):
             ),
         )
 
-    def test_multibyte_characters(self):
+    def test_multibyte_characters(self) -> None:
         parser = Parser()
         parser.set_language(JAVASCRIPT)
         source_code = bytes("'😎' && '🐍'", "utf8")
@@ -68,7 +68,7 @@ class TestParser(TestCase):
 
 
 class TestNode(TestCase):
-    def test_child_by_field_id(self):
+    def test_child_by_field_id(self) -> None:
         parser = Parser()
         parser.set_language(PYTHON)
         tree = parser.parse(b"def foo():\n  bar()")
@@ -77,18 +77,24 @@ class TestNode(TestCase):
 
         self.assertEqual(PYTHON.field_id_for_name("nameasdf"), None)
         name_field = PYTHON.field_id_for_name("name")
+        assert name_field is not None
         alias_field = PYTHON.field_id_for_name("alias")
+        assert alias_field is not None
         self.assertIsInstance(alias_field, int)
         self.assertIsInstance(name_field, int)
         self.assertEqual(root_node.child_by_field_id(alias_field), None)
         self.assertEqual(root_node.child_by_field_id(name_field), None)
         self.assertEqual(fn_node.child_by_field_id(alias_field), None)
-        self.assertEqual(fn_node.child_by_field_id(name_field).type, "identifier")
+        name_field_node = fn_node.child_by_field_id(name_field)
+        assert name_field_node is not None
+        self.assertEqual(name_field_node.type, "identifier")
         self.assertRaises(TypeError, root_node.child_by_field_id, "")
         self.assertRaises(TypeError, root_node.child_by_field_name, True)
         self.assertRaises(TypeError, root_node.child_by_field_name, 1)
 
-        self.assertEqual(fn_node.child_by_field_name("name").type, "identifier")
+        name_field_node = fn_node.child_by_field_name("name")
+        assert name_field_node is not None
+        self.assertEqual(name_field_node.type, "identifier")
         self.assertEqual(fn_node.child_by_field_name("asdfasdfname"), None)
 
         self.assertEqual(
@@ -96,7 +102,7 @@ class TestNode(TestCase):
             fn_node.child_by_field_name("name"),
         )
 
-    def test_children(self):
+    def test_children(self) -> None:
         parser = Parser()
         parser.set_language(PYTHON)
         tree = parser.parse(b"def foo():\n  bar()")
@@ -139,7 +145,7 @@ class TestNode(TestCase):
         self.assertEqual(statement_node.type, "block")
         self.assertEqual(statement_node.is_named, True)
 
-    def test_tree(self):
+    def test_tree(self) -> None:
         code = b"def foo():\n  bar()\n\ndef foo():\n  bar()"
         parser = Parser()
         parser.set_language(PYTHON)
@@ -162,7 +168,7 @@ class TestNode(TestCase):
 
 
 class TestTree(TestCase):
-    def test_tree_cursor_without_tree(self):
+    def test_tree_cursor_without_tree(self) -> None:
         parser = Parser()
         parser.set_language(PYTHON)
 
@@ -175,7 +181,7 @@ class TestTree(TestCase):
         for item in cursor.node.children:
             self.assertIsNotNone(item.is_named)
 
-    def test_walk(self):
+    def test_walk(self) -> None:
         parser = Parser()
         parser.set_language(PYTHON)
         tree = parser.parse(b"def foo():\n  bar()")
@@ -221,7 +227,7 @@ class TestTree(TestCase):
         self.assertEqual(cursor.node.is_named, True)
         self.assertEqual(cursor.current_field_name(), "parameters")
 
-    def test_edit(self):
+    def test_edit(self) -> None:
         parser = Parser()
         parser.set_language(PYTHON)
         tree = parser.parse(b"def foo():\n  bar()")
@@ -265,7 +271,7 @@ class TestTree(TestCase):
 
 
 class TestQuery(TestCase):
-    def test_errors(self):
+    def test_errors(self) -> None:
         with self.assertRaisesRegex(NameError, "Invalid node type foo"):
             PYTHON.query("(list (foo))")
         with self.assertRaisesRegex(NameError, "Invalid field name buzz"):
@@ -276,7 +282,7 @@ class TestQuery(TestCase):
             PYTHON.query("(list))")
         PYTHON.query("(function_definition)")
 
-    def test_captures(self):
+    def test_captures(self) -> None:
         parser = Parser()
         parser.set_language(PYTHON)
         source = b"def foo():\n  bar()\ndef baz():\n  quux()\n"
